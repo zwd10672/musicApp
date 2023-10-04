@@ -6,7 +6,6 @@
 </template>
 
 <script>
-import '@/assets/scss/variable.scss'
 export default {
   name: 'm-header'
 }
@@ -16,7 +15,7 @@ export default {
   .header {
     height: 44px;
     text-align: center;
-    // color: $color-theme;
+    color: $color-theme;
     font-size: 0;
     .icon {
       display: inline-block;
