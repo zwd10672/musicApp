@@ -15,7 +15,7 @@
 
 <script>
 export default {
-  name: 'tab',
+  name: 'myTab',
   data () {
     return {
       tabs: [
