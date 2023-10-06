@@ -1,8 +1,9 @@
 <template>
-<div v-loading="!singers.length" class="singer">
-<indexList
-:data="singers"></indexList>
-</div>
+  <div class="singer" v-loading="!singers.length">
+    <index-list
+      :data="singers"
+    ></index-list>
+  </div>
 </template>
 
 <script>
@@ -21,7 +22,6 @@ export default {
   },
   async created () {
     const res = await getSingerList()
-    console.log(res)
     this.singers = res.singers
   }
 }
@@ -32,5 +32,6 @@ export default {
     width: 100%;
     top: 88px;
     bottom: 0;
+    position: fixed;
   }
 </style>

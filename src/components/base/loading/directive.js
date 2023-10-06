@@ -25,6 +25,7 @@ export const loadingDirective = {
   updated (el, binding) {
     // 动态拿到title
     const title = binding.arg
+
     if (typeof title !== 'undefined') {
       el.instance.setTitle(title)
     }
