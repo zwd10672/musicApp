@@ -1,14 +1,15 @@
 <template>
-  <div class="recommend">
-        <van-swipe class="slider-wrapper"
-          :autoplay="3000"
-          indicator-color="white">
-          <van-swipe-item v-for="banner in sliders" :key="banner.id">
-            <img class="slider-content" :src="banner.pic" alt="" />
-          </van-swipe-item>
-         </van-swipe>
+
+<div class="recommend" v-loading="loading">
+  <Scroll class="scroll-content">
+    <div>
+        <div class="slider-wrapper">
+          <div class="slider-content">
+            <Slider v-if="sliders.length" :sliders="sliders"></Slider>
+          </div>
+         </div>
         <div class="recommend-list">
-          <h1 class="list-title">热门歌单推荐</h1>
+          <h1 class="list-title" v-show="!loading">热门歌单推荐</h1>
           <ul>
             <li
               v-for="item in albums"
@@ -17,7 +18,7 @@
               @click="selectItem(item)"
             >
               <div class="icon">
-                <img width="60" height="60" :src="item.pic" />
+                <img width="60" height="60" v-lazy="item.pic" />
               </div>
               <div class="text">
                 <h2 class="name">
@@ -30,14 +31,23 @@
             </li>
           </ul>
         </div>
-  </div>
+    </div>
+  </Scroll>
+</div>
+
 </template>
 
 <script>
 import { getRecommend } from '@/service/recommend'
+import Slider from '@/components/base/slider/slider'
+import Scroll from '@/components/base/scroll/scroll'
 
 export default {
   name: 'recommend',
+  components: {
+    Slider,
+    Scroll
+  },
   data () {
     return {
       sliders: [],
@@ -45,11 +55,15 @@ export default {
       selectedAlbum: null
     }
   },
+  computed: {
+    loading () {
+      return !this.sliders.length && !this.albums.length
+    }
+  },
   async created () {
     const result = await getRecommend()
     this.sliders = result.sliders
     this.albums = result.albums
-    console.log(result)
   }
 }
 </script>
@@ -61,13 +75,23 @@ export default {
   top: 88px;
   bottom: 0;
   overflow: scroll;
-    .slider-wrapper {
-      overflow: hidden;
-      .slider-content {
-        max-width: 100%;
-        height: auto;
+   .scroll-content{
+     height: 100%;
+     overflow: hidden;
+      .slider-wrapper {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-top: 40%;
+        overflow: hidden;
+        .slider-content {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+        }
       }
-    }
     .recommend-list {
       .list-title {
         height: 65px;
@@ -104,6 +128,7 @@ export default {
           color: $color-text-d;
         }
       }
+    }
     }
 }
 </style>

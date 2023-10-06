@@ -1,22 +1,34 @@
 <template>
-<div ref="rootRef">
-  <slot></slot>
-</div>
+  <div ref="rootRef">
+    <slot> </slot>
+  </div>
 </template>
 
 <script>
-import { useScroll } from './use-scroll'
+import useScroll from './use-scroll'
 import { ref } from 'vue'
+
 export default {
   name: 'scroll',
-
-  setup () {
+  props: {
+    click: {
+      type: Boolean,
+      default: true
+    },
+    probeType: {
+      type: Number,
+      default: 0
+    }
+  },
+  // emits: ['scroll']
+  setup (props, { emit }) {
     const rootRef = ref(null)
-    useScroll()
+    const scroll = useScroll(rootRef, props)
+
     return {
-      rootRef
+      rootRef,
+      scroll
     }
   }
-
 }
 </script>

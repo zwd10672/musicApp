@@ -1,6 +1,5 @@
 <template>
 <m-header></m-header>
- <!-- eslint-disable-next-line vue/multi-word-component-names -->
 <Tab></Tab>
 <router-view></router-view>
 </template>
