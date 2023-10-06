@@ -8,20 +8,21 @@ import {
 
 BScroll.use(ObserveDOM)
 
-export default function useScroll (wrapperRef, options) {
+export default function useScroll (wrapperRef, options, emit) {
   const scroll = ref(null)
 
   onMounted(() => {
-    scroll.value = new BScroll(wrapperRef.value, {
+    const scrollVal = scroll.value = new BScroll(wrapperRef.value, {
       observeDOM: true,
       ...options
     })
 
-    // if (options.probeType > 0) {
-    //   scrollVal.on('scroll', (pos) => {
-    //     emit('scroll', pos)
-    //   })
-    // }
+    if (options.probeType > 0) {
+      scrollVal.on('scroll', (pos) => {
+        // 派发事件 实时获得位置信息
+        emit('scroll', pos)
+      })
+    }
   })
 
   onUnmounted(() => {

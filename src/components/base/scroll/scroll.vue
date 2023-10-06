@@ -20,10 +20,11 @@ export default {
       default: 0
     }
   },
-  // emits: ['scroll']
+  // 自定义事件
+  emits: ['scroll'],
   setup (props, { emit }) {
     const rootRef = ref(null)
-    const scroll = useScroll(rootRef, props)
+    useScroll(rootRef, props, emit)
 
     return {
       rootRef,
