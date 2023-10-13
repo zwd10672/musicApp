@@ -67,20 +67,29 @@ export default {
       }
     }
   },
-  setup (props) {
+  // 通过emits定义一个select事件
+  emits: ['select'],
+  setup (props, { emit }) {
     // 从useFixed中拿到onScroll函数 将group传递给useFixed函数体
     const { groupRef, onScroll, fixedTitle, fixedStyle, currentIndex } = useFixed(props)
     const { shortcutList, scrollRef, onshortcutTouchStart, onshortcutTouchMove } = useshortcut(props, groupRef)
+    // 通过onItemClick将emit事件派发出去
+    function onItemClick (item) {
+      emit('select', item)
+    }
     return {
+      // useFixed钩子函数中的数据
       groupRef,
       onScroll,
       fixedTitle,
       fixedStyle,
-      shortcutList,
-      onshortcutTouchStart,
       currentIndex,
+      // useshortcut钩子函数中的数据
+      onshortcutTouchStart,
+      shortcutList,
       scrollRef,
-      onshortcutTouchMove
+      onshortcutTouchMove,
+      onItemClick
     }
   }
 }

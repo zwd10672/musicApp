@@ -2,13 +2,23 @@
   <div class="singer" v-loading="!singers.length">
     <index-list
       :data="singers"
+      @select="selectSinger"
     ></index-list>
+    <router-view v-slot="{ Component }">
+       <transition name="slide">
+         <!-- slide为样式名 -->
+         <!-- 路由组件实现跳转 -->
+          <component :singer="selectedSinger" :is="Component" />
+       </transition>
+    </router-view>
   </div>
 </template>
 
 <script>
 import { getSingerList } from '@/service/singer.js'
 import indexlist from '@/components/base/index-list/index-list'
+import storage from 'good-storage'
+import { SINGER_KEY } from '@/assets/js/constant.js'
 export default {
   name: 'mySinger',
   components: {
@@ -23,6 +33,18 @@ export default {
   async created () {
     const res = await getSingerList()
     this.singers = res.singers
+  },
+  methods: {
+    selectSinger (singer) {
+      this.selectedSinger = singer
+      this.cacheSinger(singer)
+      this.$router.push({
+        path: `/singer/${singer.mid}`
+      })
+    },
+    cacheSinger (singer) {
+      storage.session.set(SINGER_KEY, singer)
+    }
   }
 }
 </script>

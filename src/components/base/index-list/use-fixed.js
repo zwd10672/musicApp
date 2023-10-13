@@ -13,7 +13,7 @@ export default function useFixed (props) {
   const currentIndex = ref(0)
   // 当前组到下一个组之间的距离
   const distance = ref(0)
-
+  // 计算属性 拿到每一个标题
   const fixedTitle = computed(() => {
     if (scrollY.value < 0) {
       return ''
@@ -40,6 +40,7 @@ export default function useFixed (props) {
   // 监听滚动
   watch(scrollY, (newY) => {
     const listHeightsVal = listHeights.value
+    // listHeightsVal 为获取到的每一个li之间的距离
     for (let i = 0; i < listHeightsVal.length - 1; i++) {
       const heightTop = listHeightsVal[i]
       const heightBottom = listHeightsVal[i + 1]

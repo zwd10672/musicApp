@@ -68,10 +68,10 @@ function handleSongList (list) {
 
   list.forEach((item) => {
     const info = item.songInfo || item
-    if (info.pay.pay_play !== 0 || !info.interval) {
-      // 过滤付费歌曲和获取不到时长的歌曲
-      return
-    }
+    // if (info.pay.pay_play !== 0 || !info.interval) {
+    //   // 过滤付费歌曲和获取不到时长的歌曲
+    //   return
+    // }
 
     // 构造歌曲的数据结构
     const song = {
