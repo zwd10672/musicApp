@@ -19,12 +19,33 @@
           <h2 class="subtitle">{{currentSong.singer}}</h2>
         </div>
         <!-- 头部区域渲染结束 -->
+        <!-- middle层 -->
+        <div class="middle">
+        <div class="middle-l">
+          <div class="cd-wrapper">
+            <div
+            ref="cdRef"
+            class="cd">
+              <img
+              ref="cdImageRef"
+              :src="currentSong.pic"
+              :class="cdCls"
+              class="image">
+            </div>
+          </div>
+        </div>
+        </div>
         <!-- 播放器管理 -->
         <div class="bottom">
           <div class="progress-wrapper">
             <span class="time time-l">{{formatTime(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar :progress="progress">
+              <progress-bar
+              :progress="progress"
+              @progress-changing="onProgressChanging"
+              @progress-changed="onProgressChanged"
+
+              >
               </progress-bar>
             </div>
             <span class="time time-r">{{formatTime(currentSong.duration)}}</span>
@@ -54,7 +75,9 @@
     <audio ref="audioRef"
     @pause="pause"
     @canplay="ready"
+    @error="error"
     @timeupdate="updateTime"
+    @ended="end"
     ></audio>
   </div>
 </template>
@@ -65,7 +88,9 @@ import { computed, ref, watch } from 'vue'
 import useMode from './use-mode'
 import useFavorite from './use-favorite'
 import ProgressBar from './progress-bar'
+import useCd from './use-cd'
 import { formatTime } from '@/assets/js/util'
+import { PLAY_MODE } from '@/assets/js/constant.js'
 export default {
   name: 'player',
   components: {
@@ -76,19 +101,23 @@ export default {
     const audioRef = ref(null)
     const songReady = ref(false)
     const currentTime = ref(0)
+    let progressChanging = false
     // 从state中通过计算属性拿到的动态数据
     const playing = computed(() => store.state.playing)
     const fullScreen = computed(() => store.state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
     const currentIndex = computed(() => store.state.currentIndex)
     const playlist = computed(() => store.state.playlist)
+    const playMode = computed(() => store.state.playMode)
     // use-mode.js
     const { iconMode, changeMode } = useMode()
+    const { cdCls, cdRef, cdImageRef } = useCd()
     const { getFavoriteIcon, toggleFavorite } = useFavorite()
     // 一大堆计算属性
     const playIcon = computed(() => {
       return playing.value ? 'icon-pause' : 'icon-play'
     })
+    // 获取到进度条的百分比
     const progress = computed(() => {
       return currentTime.value / currentSong.value.duration
     })
@@ -165,9 +194,6 @@ export default {
           index = 0
         }
         store.commit('setCurrentIndex', index)
-        if (!playing.value) {
-          store.commit('setPlayingState', true)
-        }
       }
     }
     // 定义播放器循环播放
@@ -184,9 +210,32 @@ export default {
       }
       songReady.value = true
     }
+    function error () {
+      songReady.value = true
+    }
     // 获取歌曲的当前播放时长
     function updateTime (e) {
-      currentTime.value = e.target.currentTime
+      if (!progressChanging) { currentTime.value = e.target.currentTime }
+    }
+    function onProgressChanging (progress) {
+      progressChanging = true
+      currentTime.value = currentSong.value.duration * progress
+    }
+    function onProgressChanged (progress) {
+      progressChanging = false
+      audioRef.value.currentTime = currentTime.value = currentSong.value.duration * progress
+      if (!playing.value) {
+        store.commit('setPlayingState', true)
+      }
+    }
+    // 播放完当前歌曲之后执行的下一步操作
+    function end () {
+      currentTime.value = 0
+      if (playMode.value === PLAY_MODE.loop) {
+        loop()
+      } else {
+        next()
+      }
     }
     return {
       fullScreen,
@@ -200,8 +249,12 @@ export default {
       pause,
       prev,
       next,
+      error,
       ready,
+      end,
       updateTime,
+      onProgressChanging,
+      onProgressChanged,
       disableCls,
       // util
       formatTime,
@@ -209,7 +262,10 @@ export default {
       iconMode,
       changeMode,
       getFavoriteIcon,
-      toggleFavorite
+      toggleFavorite,
+      cdCls,
+      cdRef,
+      cdImageRef
     }
   }
 }
