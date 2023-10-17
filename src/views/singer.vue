@@ -37,12 +37,14 @@ export default {
   methods: {
     selectSinger (singer) {
       this.selectedSinger = singer
+      // 从本地读取歌曲
       this.cacheSinger(singer)
       this.$router.push({
         path: `/singer/${singer.mid}`
       })
     },
     cacheSinger (singer) {
+      // 将当前歌曲保存的本地
       storage.session.set(SINGER_KEY, singer)
     }
   }

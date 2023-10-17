@@ -17,13 +17,14 @@ function deleteFromArr (arr, compare) {
     arr.splice(index, 1)
   }
 }
+// 保存歌曲到收藏
 export function save (item, key, compare, maxLen) {
   const items = storage.get(key, [])
   insertArray(items, item, compare, maxLen)
   storage.set(key, items)
   return items
 }
-
+// 移除收藏中的歌曲
 export function remove (key, compare) {
   const items = storage.get(key, [])
   deleteFromArr(items, compare)

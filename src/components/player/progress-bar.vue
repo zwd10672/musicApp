@@ -66,7 +66,6 @@ export default {
     onTouchMove (e) {
       // 获取到每次拖动进度条的宽度
       const delta = e.touches[0].pageX - this.touch.x1
-      // console.log(delta)
       const tempWidth = this.touch.begiinWidth + delta
       // 拿到播放器的进度条宽度
       const barWidth = this.$el.clientWidth - progressBtnWidth
@@ -87,9 +86,6 @@ export default {
       const barWidth = this.$el.clientWidth - progressBtnWidth
       const progress = offsetWidth / barWidth
       this.$emit('progress-changed', progress)
-      // console.log(progress)
-      console.log(this.$el.clientWidth)
-      console.log(this.$el.getBoundingClientRect().left)
     }
   }
 }

@@ -39,6 +39,7 @@
       @scroll="onScroll"
     >
       <div class="song-list-wrapper">
+        <!-- 渲染每一首歌曲，将songs传入进去 -->
         <song-list
           :songs="songs"
           @select="selectItem"
@@ -141,12 +142,14 @@ export default {
     onScroll (pos) {
       this.scrollY = -pos.y
     },
+    // 点击播放歌曲，用list将当前歌曲保存到vuex中，index表示当前歌曲的索引
     selectItem ({ song, index }) {
       this.selectPlay({
         list: this.songs,
         index
       })
     },
+    // 歌曲随机播放
     random () {
       this.randomPlay(this.songs)
     },

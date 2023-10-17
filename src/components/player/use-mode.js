@@ -15,7 +15,9 @@ export default function useMode () {
         : 'icon-loop'
   })
   function changeMode () {
+    // 修改播放状态
     const mode = (playMode.value + 1) % 3
+    // 利用dispatch提交当前的播放状态
     store.dispatch('changeMode', mode)
   }
   return {

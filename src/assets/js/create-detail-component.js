@@ -2,21 +2,21 @@ import MusicList from '@/components/music-list/music-list'
 import storage from 'good-storage'
 import { processSongs } from '@/service/song'
 
-export default function createDetailComponent(name, key, fetch) {
+export default function createDetailComponent (name, key, fetch) {
   return {
     name,
     components: { MusicList },
     props: {
       data: Object
     },
-    data() {
+    data () {
       return {
         songs: [],
         loading: true
       }
     },
     computed: {
-      computedData() {
+      computedData () {
         let ret = null
         const data = this.data
         if (data) {
@@ -29,16 +29,16 @@ export default function createDetailComponent(name, key, fetch) {
         }
         return ret
       },
-      pic() {
+      pic () {
         const data = this.computedData
         return data && data.pic
       },
-      title() {
+      title () {
         const data = this.computedData
         return data && (data.name || data.title)
       }
     },
-    async created() {
+    async created () {
       const data = this.computedData
       if (!data) {
         const path = this.$route.matched[0].path

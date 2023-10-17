@@ -21,7 +21,7 @@
         <!-- 头部区域渲染结束 -->
         <!-- middle层 -->
         <div class="middle">
-        <div class="middle-l">
+        <div class="middle-l" v-show="false">
           <div class="cd-wrapper">
             <div
             ref="cdRef"
@@ -33,7 +33,30 @@
               class="image">
             </div>
           </div>
+          <div class="playing-lyric-wrapper">
+            <div class="playing-lyric"> {{playingLyric}} </div>
+          </div>
         </div>
+          <scroll
+            class="middle-r"
+            ref="lyricScrollRef"
+          >
+            <div class="lyric-wrapper" v-show="true">
+              <div v-if="currentLyric" ref="lyricListRef">
+                <p
+                  class="text"
+                  :class="{'current': currentLineNum ===index}"
+                  v-for="(line,index) in currentLyric.lines"
+                  :key="line.num"
+                >
+                  {{line.txt}}
+                </p>
+              </div>
+              <div class="pure-music" v-show="pureMusicLyric">
+                <p>{{pureMusicLyric}}</p>
+              </div>
+            </div>
+          </scroll>
         </div>
         <!-- 播放器管理 -->
         <div class="bottom">
@@ -89,12 +112,15 @@ import useMode from './use-mode'
 import useFavorite from './use-favorite'
 import ProgressBar from './progress-bar'
 import useCd from './use-cd'
+import useLyric from './use-lyric'
 import { formatTime } from '@/assets/js/util'
 import { PLAY_MODE } from '@/assets/js/constant.js'
+import Scroll from '@/components/base/scroll/scroll'
 export default {
   name: 'player',
   components: {
-    ProgressBar
+    ProgressBar,
+    Scroll
   },
   setup () {
     const store = useStore()
@@ -113,6 +139,7 @@ export default {
     const { iconMode, changeMode } = useMode()
     const { cdCls, cdRef, cdImageRef } = useCd()
     const { getFavoriteIcon, toggleFavorite } = useFavorite()
+    const { currentLineNum, currentLyric, playLyric, pureMusicLyric, lyricScrollRef, lyricListRef, stopLyric, playingLyric } = useLyric({ songReady, currentTime })
     // 一大堆计算属性
     const playIcon = computed(() => {
       return playing.value ? 'icon-pause' : 'icon-play'
@@ -135,12 +162,20 @@ export default {
       const audioEl = audioRef.value
       audioEl.src = newSong.url
       audioEl.play()
+      store.commit('setPlayingState', true)
     })
     // 监听播放行为
     watch(playing, (newPlaying) => {
       const audioEl = audioRef.value
       if (!songReady.value) {
         return
+      }
+      if (newPlaying) {
+        audioEl.play()
+        playLyric()
+      } else {
+        audioEl.pause()
+        stopLyric()
       }
       newPlaying ? audioEl.play() : audioEl.pause()
     })
@@ -156,7 +191,7 @@ export default {
       store.commit('setPlayingState', !playing.value)
     }
 
-    // 播放器自动暂停事件
+    // 播放器暂停事件
     function pause () {
       store.commit('setPlayingState', false)
     }
@@ -175,9 +210,6 @@ export default {
           index = list.length - 1
         }
         store.commit('setCurrentIndex', index)
-        if (!playing.value) {
-          store.commit('setPlayingState', true)
-        }
       }
     }
     // 切换下一首歌
@@ -209,6 +241,7 @@ export default {
         return
       }
       songReady.value = true
+      playLyric()
     }
     function error () {
       songReady.value = true
@@ -220,12 +253,15 @@ export default {
     function onProgressChanging (progress) {
       progressChanging = true
       currentTime.value = currentSong.value.duration * progress
+      playLyric()
+      stopLyric()
     }
     function onProgressChanged (progress) {
       progressChanging = false
       audioRef.value.currentTime = currentTime.value = currentSong.value.duration * progress
       if (!playing.value) {
         store.commit('setPlayingState', true)
+        playLyric()
       }
     }
     // 播放完当前歌曲之后执行的下一步操作
@@ -265,7 +301,16 @@ export default {
       toggleFavorite,
       cdCls,
       cdRef,
-      cdImageRef
+      cdImageRef,
+      // use-lyric
+      currentLineNum,
+      currentLyric,
+      playLyric,
+      lyricScrollRef,
+      lyricListRef,
+      stopLyric,
+      pureMusicLyric,
+      playingLyric
     }
   }
 }
@@ -337,6 +382,7 @@ export default {
         font-size: 0;
         .middle-l {
           display: inline-block;
+          // display:none;
           vertical-align: top;
           position: relative;
           width: 100%;

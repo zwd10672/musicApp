@@ -26,3 +26,22 @@ export function processSongs (songs) {
       })
   })
 }
+// 获取当前歌曲的歌词
+const lyricMap = {}
+
+export function getLyric (song) {
+  if (song.lyric) {
+    return Promise.resolve(song.lyric)
+  }
+  const mid = song.mid
+  const lyric = lyricMap[mid]
+  if (lyric) {
+    return Promise.resolve(lyric)
+  }
+  return get('/api/getLyric', {
+    mid
+  }).then((result) => {
+    const lyric = result ? result.lyric : '[00.00.00]当前歌曲无法获取歌词'
+    return lyric
+  })
+}
