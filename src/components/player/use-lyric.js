@@ -11,7 +11,7 @@ export default function useLyric ({ songReady, currentTime }) {
   const lyricScrollRef = ref(null)
   const lyricListRef = ref(null)
   const pureMusicLyric = ref(0)
-  const playingLyric = ref(0)
+  const playingLyric = ref(null)
 
   watch(currentSong, async (newSong) => {
     if (!newSong.url || !newSong.id) {
@@ -20,7 +20,7 @@ export default function useLyric ({ songReady, currentTime }) {
     // 如果当前播放歌曲改变的话，先停止上一条的逻辑，并把上条歌曲的歌词和歌词行数变成空
     stopLyric()
     currentLyric.value = null
-    currentLineNum.value = 0
+    currentLineNum.value = ''
     pureMusicLyric.value = ''
     playingLyric.value = ''
 
@@ -63,7 +63,6 @@ export default function useLyric ({ songReady, currentTime }) {
     currentLineNum.value = lineNum
     // 当前播放歌词
     playingLyric.value = txt
-    console.log(txt)
     // 拿到scroll对象
     const scrollComp = lyricScrollRef.value
     // 拿到下面的行对象

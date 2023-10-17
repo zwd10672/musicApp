@@ -1,5 +1,5 @@
 <template>
-  <div class="player">
+  <div class="player" v-show="playlist.length">
     <div
         class="normal-player"
         v-show="fullScreen"
@@ -20,8 +20,12 @@
         </div>
         <!-- 头部区域渲染结束 -->
         <!-- middle层 -->
-        <div class="middle">
-        <div class="middle-l" v-show="false">
+        <div class="middle"
+        @touchstart.prevent="onMiddleTouchStart"
+        @touchmove.prevent="onMiddleTouchMove"
+        @touchend.prevent="onMiddleTouchEnd"
+        >
+        <div class="middle-l" :style="middleLStyle">
           <div class="cd-wrapper">
             <div
             ref="cdRef"
@@ -40,8 +44,9 @@
           <scroll
             class="middle-r"
             ref="lyricScrollRef"
+            :style="middleRStyle"
           >
-            <div class="lyric-wrapper" v-show="true">
+            <div class="lyric-wrapper">
               <div v-if="currentLyric" ref="lyricListRef">
                 <p
                   class="text"
@@ -60,6 +65,10 @@
         </div>
         <!-- 播放器管理 -->
         <div class="bottom">
+          <div class="dot-wrapper">
+            <span class="dot" :class="{'active':currentShow === 'cd'}"></span>
+            <span class="dot" :class="{'active':currentShow === 'lyric'}"></span>
+          </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{formatTime(currentTime)}}</span>
             <div class="progress-bar-wrapper">
@@ -93,7 +102,10 @@
         </div>
         <!-- 播放器管理结束 -->
     </div>
-
+    <mini-player
+    :progress="progress"
+    :toggle-play="togglePlay"
+    ></mini-player>
 <!-- @pause 播放器自动暂停事件 -->
     <audio ref="audioRef"
     @pause="pause"
@@ -110,17 +122,20 @@ import { useStore } from 'vuex'
 import { computed, ref, watch } from 'vue'
 import useMode from './use-mode'
 import useFavorite from './use-favorite'
-import ProgressBar from './progress-bar'
+import MiniPlayer from './mini-player.vue'
+import Scroll from '@/components/base/scroll/scroll.vue'
+import ProgressBar from './progress-bar.vue'
 import useCd from './use-cd'
 import useLyric from './use-lyric'
+import useMiddleInteractive from './use-middle-interactive'
 import { formatTime } from '@/assets/js/util'
 import { PLAY_MODE } from '@/assets/js/constant.js'
-import Scroll from '@/components/base/scroll/scroll'
 export default {
   name: 'player',
   components: {
     ProgressBar,
-    Scroll
+    Scroll,
+    MiniPlayer
   },
   setup () {
     const store = useStore()
@@ -140,6 +155,7 @@ export default {
     const { cdCls, cdRef, cdImageRef } = useCd()
     const { getFavoriteIcon, toggleFavorite } = useFavorite()
     const { currentLineNum, currentLyric, playLyric, pureMusicLyric, lyricScrollRef, lyricListRef, stopLyric, playingLyric } = useLyric({ songReady, currentTime })
+    const { onMiddleTouchStart, onMiddleTouchMove, onMiddleTouchEnd, currentShow, middleLStyle, middleRStyle } = useMiddleInteractive()
     // 一大堆计算属性
     const playIcon = computed(() => {
       return playing.value ? 'icon-pause' : 'icon-play'
@@ -310,7 +326,15 @@ export default {
       lyricListRef,
       stopLyric,
       pureMusicLyric,
-      playingLyric
+      playingLyric,
+      // use-middle-interactive
+      onMiddleTouchStart,
+      onMiddleTouchMove,
+      onMiddleTouchEnd,
+      currentShow,
+      middleLStyle,
+      middleRStyle,
+      playlist
     }
   }
 }
@@ -442,6 +466,7 @@ export default {
               line-height: 32px;
               color: $color-text-l;
               font-size: $font-size-medium;
+              margin-top: 5px;
               &.current {
                 color: $color-text;
               }
