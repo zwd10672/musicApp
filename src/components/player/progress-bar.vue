@@ -47,10 +47,9 @@ export default {
     }
   },
   watch: {
-    progress (newProgress) {
+    progress (progress) {
       // 拿到播放器的进度条
-      const barWidth = this.$el.clientWidth - progressBtnWidth
-      this.offset = barWidth * newProgress
+      this.setOffset(progress)
     }
   },
   created () {
@@ -86,6 +85,10 @@ export default {
       const barWidth = this.$el.clientWidth - progressBtnWidth
       const progress = offsetWidth / barWidth
       this.$emit('progress-changed', progress)
+    },
+    setOffset (progress) {
+      const barWidth = this.$el.clientWidth - progressBtnWidth
+      this.offset = barWidth * progress
     }
   }
 }

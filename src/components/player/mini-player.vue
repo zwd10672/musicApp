@@ -23,14 +23,14 @@
         ref="sliderWrapperRef"
         class="slider-wrapper"
       >
-        <div class="slider-group">
+        <div ref="sliderWrapperRef" class="slider-group">
           <div
             class="slider-page"
             v-for="song in playlist"
             :key="song.id"
           >
-            <h2 class="name">{{currentSong.name}}</h2>
-            <p class="desc">{{currentSong.singer}}</p>
+            <h2 class="name">{{song.name}}</h2>
+            <p class="desc">{{song.singer}}</p>
           </div>
         </div>
       </div>
@@ -55,6 +55,7 @@
 import { useStore } from 'vuex'
 import { computed } from 'vue'
 import useCd from './use-cd'
+import useMiniSlider from './use-mini-slider'
 import ProgressCircle from './progress-circle'
 
 export default {
@@ -75,8 +76,8 @@ export default {
     const currentSong = computed(() => store.getters.currentSong)
     const playing = computed(() => store.state.playing)
     const playlist = computed(() => store.state.playlist)
-
     const { cdCls, cdRef, cdImageRef } = useCd()
+    const { sliderWrapperRef } = useMiniSlider()
 
     const miniPlayIcon = computed(() => {
       return playing.value ? 'icon-pause-mini' : 'icon-play-mini'
@@ -92,11 +93,13 @@ export default {
       playlist,
       miniPlayIcon,
       showNormalPlayer,
+      sliderWrapperRef,
       // cd
       cdCls,
       cdRef,
       cdImageRef
       // mini-slider
+
     }
   }
 }

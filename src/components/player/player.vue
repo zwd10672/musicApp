@@ -1,5 +1,6 @@
 <template>
   <div class="player" v-show="playlist.length">
+  <transition name="normal">
     <div
         class="normal-player"
         v-show="fullScreen"
@@ -73,6 +74,7 @@
             <span class="time time-l">{{formatTime(currentTime)}}</span>
             <div class="progress-bar-wrapper">
               <progress-bar
+              ref="proBarRef"
               :progress="progress"
               @progress-changing="onProgressChanging"
               @progress-changed="onProgressChanged"
@@ -102,6 +104,7 @@
         </div>
         <!-- 播放器管理结束 -->
     </div>
+    </transition>
     <mini-player
     :progress="progress"
     :toggle-play="togglePlay"
@@ -119,7 +122,7 @@
 
 <script>
 import { useStore } from 'vuex'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import useMode from './use-mode'
 import useFavorite from './use-favorite'
 import MiniPlayer from './mini-player.vue'
@@ -141,6 +144,7 @@ export default {
     const store = useStore()
     const audioRef = ref(null)
     const songReady = ref(false)
+    const proBarRef = ref(null)
     const currentTime = ref(0)
     let progressChanging = false
     // 从state中通过计算属性拿到的动态数据
@@ -194,6 +198,12 @@ export default {
         stopLyric()
       }
       newPlaying ? audioEl.play() : audioEl.pause()
+    })
+    watch(fullScreen, async (newFullScreen) => {
+      if (newFullScreen) {
+        await nextTick()
+        proBarRef.value.setOffset(progress.value)
+      }
     })
     // 点击返回，将FullScreen设置为false 关闭全屏播放器
     function goBack () {
@@ -294,6 +304,7 @@ export default {
       currentSong,
       currentTime,
       audioRef,
+      proBarRef,
       goBack,
       playIcon,
       progress,
