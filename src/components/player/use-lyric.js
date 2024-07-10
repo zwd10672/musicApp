@@ -43,7 +43,9 @@ export default function useLyric ({ songReady, currentTime }) {
       pureMusicLyric.value = lyric.replace(/\[(\d{2}):(\d{2}):(\d{2})]/g, '')
     }
   })
+  // 构造播放歌词的函数
   function playLyric () {
+    // 拿到歌词的val
     const currentLyricVal = currentLyric.value
     if (currentLyricVal) {
       currentLyricVal.seek(currentTime.value * 1000)

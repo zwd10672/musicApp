@@ -1,4 +1,4 @@
-import { ref, watch, computed, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, watch, computed, onMounted, nextTick, onUnmounted, onActivated, onDeactivated } from 'vue'
 import { useStore } from 'vuex'
 import BScroll from '@better-scroll/core'
 import Slider from '@better-scroll/slide'
@@ -52,12 +52,25 @@ export default function useMiniSlider () {
         sliderVal.goToPage(newIndex, 0, 0)
       }
     })
+    watch(playlist, async (newList) => {
+      if (sliderVal && sliderShow && newList.length) {
+        await nextTick()
+        sliderVal.refresh()
+      }
+    })
   })
   onUnmounted(() => {
     // 如果满足slider有值得时候才会destory
     if (slider.value) {
       slider.value.destory()
     }
+  })
+  onActivated(() => {
+    scroll.value.enable()
+    scroll.value.refresh()
+  })
+  onDeactivated(() => {
+    scroll.value.disable()
   })
 
   return {

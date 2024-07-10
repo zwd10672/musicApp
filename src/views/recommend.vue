@@ -5,7 +5,7 @@
     <div>
         <div class="slider-wrapper">
           <div class="slider-content">
-            <Slider v-if="sliders.length" :sliders="sliders"></Slider>
+            <Slider v-if="sliders.length" ref="sliderRef" :sliders="sliders"></Slider>
           </div>
          </div>
         <div class="recommend-list">
@@ -33,6 +33,13 @@
         </div>
     </div>
   </Scroll>
+      <router-view v-slot="{ Component }">
+       <transition name="slide">
+         <!-- slide为样式名 -->
+         <!-- 路由组件实现跳转 -->
+          <component :data="selectedAlbum" :is="Component" />
+       </transition>
+    </router-view>
 </div>
 
 </template>
@@ -40,7 +47,9 @@
 <script>
 import { getRecommend } from '@/service/recommend'
 import Slider from '@/components/base/slider/slider'
-import Scroll from '@/components/base/scroll/scroll'
+import Scroll from '@/components/base/wrap-scroll/index.js'
+import storage from 'good-storage'
+import { ALBUM_KEY } from '@/assets/js/constant.js'
 
 export default {
   name: 'recommend',
@@ -52,7 +61,8 @@ export default {
     return {
       sliders: [],
       albums: [],
-      selectedAlbum: null
+      selectedAlbum: null,
+      sliderRef: null
     }
   },
   computed: {
@@ -64,6 +74,18 @@ export default {
     const result = await getRecommend()
     this.sliders = result.sliders
     this.albums = result.albums
+  },
+  methods: {
+    selectItem (album) {
+      this.selectedAlbum = album
+      this.catchAlbum(album)
+      this.$router.push({
+        path: `/recommend/${album.id}`
+      })
+    },
+    catchAlbum (album) {
+      storage.session.set(ALBUM_KEY, album)
+    }
   }
 }
 </script>

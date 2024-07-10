@@ -43,6 +43,7 @@
         <song-list
           :songs="songs"
           @select="selectItem"
+          :rank="rank"
         ></song-list>
       </div>
     </scroll>
@@ -51,10 +52,11 @@
 
 <script>
 import SongList from '@/components/base/song-list/song-list'
-import Scroll from '@/components/base/scroll/scroll'
-import { mapActions } from 'vuex'
+import Scroll from '@/components/base/wrap-scroll/index.js'
+import { mapActions, mapState } from 'vuex'
 
 const RESERVE_HEIGHT = 40
+
 export default {
   name: 'music-list',
   components: {
@@ -70,7 +72,8 @@ export default {
     },
     title: String,
     pic: String,
-    loading: Boolean
+    loading: Boolean,
+    rank: Boolean
   },
   data () {
     return {
@@ -113,11 +116,17 @@ export default {
         transform: `scale(${scale})translateZ(${transformZ}px)`
       }
     },
+
     scrollStyle () {
+      const bottom = this.playlist.length ? '40px' : '0'
       return {
-        top: `${this.imageHeight}px`
+        top: `${this.imageHeight}px`,
+        bottom
       }
     },
+    ...mapState([
+      'playlist'
+    ]),
     filterStyle () {
       let blur = 0
       const scrollY = this.scrollY
@@ -144,6 +153,7 @@ export default {
     },
     // 点击播放歌曲，用list将当前歌曲保存到vuex中，index表示当前歌曲的索引
     selectItem ({ song, index }) {
+      console.log(this.songs)
       this.selectPlay({
         list: this.songs,
         index

@@ -22,7 +22,7 @@ export function processSongs (songs) {
     })
       .filter((song) => {
         // 根据歌曲的url地址判断里面是否还有vkey，如果有的话说明该歌曲可播放，没有的话说明该歌曲为加密的
-        return song.url.indexOf('vkey') > -1
+        return song.url && song.url.indexOf('vkey') > -1
       })
   })
 }

@@ -8,7 +8,7 @@
        <transition name="slide">
          <!-- slide为样式名 -->
          <!-- 路由组件实现跳转 -->
-          <component :singer="selectedSinger" :is="Component" />
+          <component :data="selectedSinger" :is="Component" />
        </transition>
     </router-view>
   </div>

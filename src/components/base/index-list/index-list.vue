@@ -51,7 +51,7 @@
   </Scroll>
 </template>
 <script>
-import Scroll from '@/components/base/scroll/scroll.vue'
+import Scroll from '@/components/base/wrap-scroll/index.js'
 import useFixed from '@/components/base/index-list/use-fixed.js'
 import useshortcut from '@/components/base/index-list/use-shortcut.js'
 export default {

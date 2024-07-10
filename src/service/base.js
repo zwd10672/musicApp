@@ -1,31 +1,20 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const ERR_OK = 0
-const baseURL = '/'
+const ERR_OK = 0;
+// const baseURL = process.env.NODE_ENV === 'production' ? './' : '47.121.195.211';
+const baseURL = process.env.NODE_ENV === 'production' ? 'http://47.121.195.211/' : '/';
+axios.defaults.baseURL = baseURL;
 
-axios.defaults.baseURL = baseURL
-
-// export const get = (url, params) => {
-//   return axios.get(url, {
-//     params
-//   }).then((res) => {
-//     const serverData = res.data
-//     if (serverData.code === ERR_OK) {
-//       return serverData.result
-//     }
-//   }).catch((e) => {
-//     console.log(e)
-//   })
-// }
-export function get (url, params) {
+console.log(baseURL, 'baseURL=>');
+export function get(url, params) {
   return axios.get(url, {
     params
   }).then((res) => {
-    const serverData = res.data
+    const serverData = res.data;
     if (serverData.code === ERR_OK) {
-      return serverData.result
+      return serverData.result;
     }
   }).catch((e) => {
-    console.log(e)
-  })
+    console.log(e);
+  });
 }

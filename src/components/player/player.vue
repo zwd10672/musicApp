@@ -1,6 +1,12 @@
 <template>
   <div class="player" v-show="playlist.length">
-  <transition name="normal">
+  <transition
+   name="normal"
+   @enter="enter"
+   @afterEnter="afterEnter"
+   @leave="leave"
+   @afterLeave="afterLeave"
+   >
     <div
         class="normal-player"
         v-show="fullScreen"
@@ -27,7 +33,7 @@
         @touchend.prevent="onMiddleTouchEnd"
         >
         <div class="middle-l" :style="middleLStyle">
-          <div class="cd-wrapper">
+          <div ref="cdWrapperRef" class="cd-wrapper">
             <div
             ref="cdRef"
             class="cd">
@@ -78,7 +84,6 @@
               :progress="progress"
               @progress-changing="onProgressChanging"
               @progress-changed="onProgressChanged"
-
               >
               </progress-bar>
             </div>
@@ -108,6 +113,7 @@
     <mini-player
     :progress="progress"
     :toggle-play="togglePlay"
+    :playingLyric="playingLyric"
     ></mini-player>
 <!-- @pause 播放器自动暂停事件 -->
     <audio ref="audioRef"
@@ -126,11 +132,13 @@ import { computed, ref, watch, nextTick } from 'vue'
 import useMode from './use-mode'
 import useFavorite from './use-favorite'
 import MiniPlayer from './mini-player.vue'
-import Scroll from '@/components/base/scroll/scroll.vue'
+import Scroll from '@/components/base/wrap-scroll/index.js'
 import ProgressBar from './progress-bar.vue'
 import useCd from './use-cd'
 import useLyric from './use-lyric'
 import useMiddleInteractive from './use-middle-interactive'
+import useAnimation from './use-animation'
+import usePlayHistory from './use-play-history'
 import { formatTime } from '@/assets/js/util'
 import { PLAY_MODE } from '@/assets/js/constant.js'
 export default {
@@ -154,37 +162,49 @@ export default {
     const currentIndex = computed(() => store.state.currentIndex)
     const playlist = computed(() => store.state.playlist)
     const playMode = computed(() => store.state.playMode)
-    // use-mode.js
+    // hook
     const { iconMode, changeMode } = useMode()
     const { cdCls, cdRef, cdImageRef } = useCd()
     const { getFavoriteIcon, toggleFavorite } = useFavorite()
     const { currentLineNum, currentLyric, playLyric, pureMusicLyric, lyricScrollRef, lyricListRef, stopLyric, playingLyric } = useLyric({ songReady, currentTime })
     const { onMiddleTouchStart, onMiddleTouchMove, onMiddleTouchEnd, currentShow, middleLStyle, middleRStyle } = useMiddleInteractive()
+    const { enter, afterEnter, leave, afterLeave, cdWrapperRef } = useAnimation()
+    const { savePlay } = usePlayHistory()
+
     // 一大堆计算属性
     const playIcon = computed(() => {
       return playing.value ? 'icon-pause' : 'icon-play'
     })
+
     // 获取到进度条的百分比
     const progress = computed(() => {
       return currentTime.value / currentSong.value.duration
     })
+
     // 点击按钮时候触发事件，动态添加一个disable属性
     const disableCls = computed(() => {
       return songReady.value ? '' : 'disable'
     })
-    // 监听播放，完成播放的实现
+
+    // 监听播放，当前歌曲发生变化的时候，调用DOM，完成播放
     watch(currentSong, (newSong) => {
       if (!newSong.id || !currentSong.value.url) {
         return
       }
+      // 初始化时间
       currentTime.value = 0
+      // 初始化歌曲准备
       songReady.value = false
+      // 拿到DOM
       const audioEl = audioRef.value
       audioEl.src = newSong.url
+      // 实现播放
       audioEl.play()
+      // 提交状态
       store.commit('setPlayingState', true)
     })
-    // 监听播放行为
+
+    // 监听播放状态的变化
     watch(playing, (newPlaying) => {
       const audioEl = audioRef.value
       if (!songReady.value) {
@@ -199,16 +219,19 @@ export default {
       }
       newPlaying ? audioEl.play() : audioEl.pause()
     })
+
     watch(fullScreen, async (newFullScreen) => {
       if (newFullScreen) {
         await nextTick()
         proBarRef.value.setOffset(progress.value)
       }
     })
+
     // 点击返回，将FullScreen设置为false 关闭全屏播放器
     function goBack () {
       store.commit('setFullScreen', false)
     }
+
     // 切换播放状态
     function togglePlay () {
       if (!songReady.value) {
@@ -221,6 +244,7 @@ export default {
     function pause () {
       store.commit('setPlayingState', false)
     }
+
     // 切换上一首歌
     function prev () {
       const list = playlist.value
@@ -238,6 +262,7 @@ export default {
         store.commit('setCurrentIndex', index)
       }
     }
+
     // 切换下一首歌
     function next () {
       const list = playlist.value
@@ -254,6 +279,7 @@ export default {
         store.commit('setCurrentIndex', index)
       }
     }
+
     // 定义播放器循环播放
     function loop () {
       const audioEl = audioRef.value
@@ -261,35 +287,49 @@ export default {
       audioEl.play()
       store.commit('setPlayingState', true)
     }
+
     // 设置歌曲缓冲
     function ready () {
       if (songReady.value) {
         return
       }
+      // 当歌曲准备状态为true时再执行播放
       songReady.value = true
+      // 播放歌词
       playLyric()
+      // 将当前播放歌曲保存到播放历史中
+      savePlay(currentSong.value)
     }
+
     function error () {
       songReady.value = true
     }
+
     // 获取歌曲的当前播放时长
     function updateTime (e) {
       if (!progressChanging) { currentTime.value = e.target.currentTime }
     }
+
+    // 进度条变化中
     function onProgressChanging (progress) {
       progressChanging = true
       currentTime.value = currentSong.value.duration * progress
       playLyric()
       stopLyric()
     }
+
+    // 进度条变化后
     function onProgressChanged (progress) {
       progressChanging = false
       audioRef.value.currentTime = currentTime.value = currentSong.value.duration * progress
+      // 点击进度条后，如果当前播放状态为false，则将播放状态改为true
       if (!playing.value) {
         store.commit('setPlayingState', true)
-        playLyric()
       }
+      // 然后执行歌词播放
+      playLyric()
     }
+
     // 播放完当前歌曲之后执行的下一步操作
     function end () {
       currentTime.value = 0
@@ -345,7 +385,15 @@ export default {
       currentShow,
       middleLStyle,
       middleRStyle,
-      playlist
+      playlist,
+      // use-animation
+      enter,
+      afterEnter,
+      cdWrapperRef,
+      leave,
+      afterLeave,
+      // use-play-history
+      savePlay
     }
   }
 }

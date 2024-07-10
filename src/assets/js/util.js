@@ -1,5 +1,4 @@
 // 封装一个洗牌函数
-
 export function shuffle (source) {
   const arr = source.slice()
   for (let i = 0; i < arr.length; i++) {
